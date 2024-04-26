@@ -21,9 +21,8 @@ for full_path in ${video_directory}/*/*/*.h264; do
     ffmpeg -n \
     -i ${full_path} \
     -filter:v \
-    "scale=640:360:flags=lanczos, \
-    pad=640:480:0:60" \
-    -c:a copy ${mp4_out_path} 
+    "scale=1280:720:flags=lanczos" \
+    -c:a copy ${mp4_out_path}
 
     echo Reencoding mp4
     ffmpeg -n -i ${mp4_out_path} -c:v libx264 -pix_fmt yuv420p -preset superfast -crf 23 ${output_directory}/${base_name}.fixed.mp4
