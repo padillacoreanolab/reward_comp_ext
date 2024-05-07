@@ -1,6 +1,26 @@
-# Other general files
-*.out
+# Repo Directories
+proc/
+example/
+pickles/
+data/
+old/
+env/
+ipynb_checkpoints/
+.ipynb_checkpoints/
+*env/
+models/
+temp/
+
+# Data Files
+*.mp4
+*.h264
+*.dat
+*.rec
+*.h5
+*.csv
 *.err
+*.out
+*.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
