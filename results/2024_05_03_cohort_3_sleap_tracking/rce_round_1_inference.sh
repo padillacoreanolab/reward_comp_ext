@@ -7,7 +7,7 @@ cd ${project_dir}
 
 cd ${experiment_dir}
 
-model_directory=/nancy/projects/reward_competition_extention/results/2024_03_25_rce3_preprocessing/proc/models/baseline_medium_rf.bottomup
+model_directory=/scratch/back_up/reward_competition_extention/temp/rce3_round_1_baseline_medium_rf.bottomup
 
 video_directory=/scratch/back_up/reward_competition_extention/data/rce_cohort_3
 output_directory=/scratch/back_up/reward_competition_extention/temp
@@ -24,17 +24,17 @@ track_with_sleap() {
     else
         echo "Processing ${input_file}..."
 
-        sleap-track ${input_file} --tracking.tracker flow \
+        sleap-track ${input_file} --tracking.tracker simplemaxtracks \
         --tracking.similarity iou \
         --tracking.match greedy \
+        --batch_size 1 \
+        --max_instances ${number_of_subjects} \
         --tracking.clean_instance_count ${number_of_subjects} \
         --tracking.target_instance_count ${number_of_subjects} \
-        --max_instances ${number_of_subjects} \
-        --batch_size 1 \
-        --tracking.max_tracking True \
-        --tracking.max_tracks ${number_of_subjects} \
         -m ${model_directory} \
-        -o ${output_file}
+        -o ${output_file} \
+        --tracking.max_tracking 1 \
+        --tracking.max_tracks ${number_of_subjects}
 
     fi
 
