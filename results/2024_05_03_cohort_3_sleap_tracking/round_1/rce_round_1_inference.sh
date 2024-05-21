@@ -10,7 +10,7 @@ cd ${experiment_dir}
 model_directory=/scratch/back_up/reward_competition_extention/temp/rce3_round_1_baseline_medium_rf.bottomup
 
 video_directory=/scratch/back_up/reward_competition_extention/data/rce_cohort_3
-output_directory=/scratch/back_up/reward_competition_extention/temp
+output_directory=/scratch/back_up/reward_competition_extention/temp/sleap
 # Process function
 track_with_sleap() {
     input_file=$1
