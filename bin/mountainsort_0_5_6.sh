@@ -8,4 +8,5 @@ pip install spikeinterface[full,widgets]==0.98.2
 # For spike sorting
 pip install --upgrade mountainsort5==0.5.6
 
- conda install conda-forge::gitpython
+conda install conda-forge::gitpython
+conda install anaconda::openpyxl 
