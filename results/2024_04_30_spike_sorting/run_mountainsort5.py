@@ -30,7 +30,7 @@ all_recording_files = [file_path for file_path in all_recording_files if "copies
 
 print("Number of recording files: ", len(all_recording_files))
 
-for recording_file in all_recording_files:
+for recording_file in sorted(all_recording_files):
     
     print("Current recording file: ", recording_file)
     
