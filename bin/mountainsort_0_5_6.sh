@@ -9,4 +9,4 @@ pip install spikeinterface[full,widgets]==0.98.2
 pip install --upgrade mountainsort5==0.5.6
 
 conda install conda-forge::gitpython
-conda install anaconda::openpyxl 
+pip install openpyxl==3.1.2

@@ -4,7 +4,7 @@ project_dir=/scratch/back_up/reward_competition_extention
 cd ${experiment_dir}
 
 video_directory=${project_dir}/data/rce_cohort_3
-output_directory=/scratch/back_up/reward_competition_extention/temp/reencoded_videos
+output_directory=/scratch/back_up/reward_competition_extention/in_progress/rce3/reencoded_videos
 
 for full_path in ${video_directory}/*/*/*.h264; do
     echo Currently working on: ${full_path}

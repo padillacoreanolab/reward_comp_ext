@@ -1,0 +1,135 @@
+---
+title: ""
+author: ""
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+# oo <- options(repos = "https://cran.r-project.org/")
+# utils::install.packages("Matrix")
+# utils::install.packages("lme4", type = "source")
+# 
+# options(oo)
+```
+
+```{r}
+tools::package_dependencies("Matrix", which = "LinkingTo", reverse = TRUE)[[1L]]
+```
+
+```{r setup, include=FALSE}
+library("tidyverse")
+# install.packages("tidymodels")
+library(tidymodels)
+# install.packages("knitr")
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+# install.packages("car")
+library(car)
+
+
+# install.packages("lme4", type = "source")
+
+library(lme4)
+options(scipen = 3, digits = 5) 
+```
+
+```{r}
+raw_lfp_trial_spectral <- read.csv("./rce_pilot_2_trial_averages.csv")
+```
+
+```{r}
+factored_lfp_trial_spectral <- raw_lfp_trial_spectral |>
+  
+  # Demographics
+  mutate(competition_closeness = as_factor(competition_closeness)) |>
+  mutate(trial_label = as_factor(trial_label)) |>
+  mutate(subject = as_factor(subject)) |>
+  mutate(agent = as_factor(agent)) |>
+  mutate(experiment = as_factor(experiment)) |>
+  # filter(!(str_detect(trial_label, 'win|lose')))
+  filter((str_detect(trial_label, 'win|lose')))
+
+
+
+
+```
+
+```{r}
+
+unique(select(factored_lfp_trial_spectral, competition_closeness))
+unique(select(factored_lfp_trial_spectral, trial_label))
+unique(select(factored_lfp_trial_spectral, subject))
+unique(select(factored_lfp_trial_spectral, agent))
+unique(select(factored_lfp_trial_spectral, experiment))
+
+```
+
+```{r}
+ggplot(factored_lfp_trial_spectral, aes(x = trial_subject_thorax_velocity, y = trial_BLA_power_theta, colour = subject, shape = trial_label)) +
+    geom_point(size = 2) +
+  theme_classic()
+```
+```{r}
+ggplot(factored_lfp_trial_spectral, aes(x = trial_subject_thorax_velocity, y = trial_BLA_power_theta, colour = trial_label, shape = trial_label)) +
+    geom_point(size = 2) +
+  theme_classic()
+```
+
+
+```{r}
+# List of all column names that contain 'theta'
+theta_columns <- grep("theta", names(factored_lfp_trial_spectral), value = TRUE)
+
+# Loop through each theta column to create a plot
+for (theta_column in theta_columns) {
+  p <- ggplot(factored_lfp_trial_spectral, aes(x = trial_subject_thorax_velocity, y = !!sym(theta_column), colour = trial_label, shape = trial_label)) +
+    geom_point(size = 2) +
+    theme_classic() +
+    labs(y = theta_column)  # Adding dynamic label for y-axis
+  
+  print(p)  # Print each plot
+}
+```
+```{r}
+# List of all column names that contain 'theta'
+theta_columns <- names(factored_lfp_trial_spectral)[grep("theta", names(factored_lfp_trial_spectral))]
+theta_columns <- theta_columns[grep("trial", theta_columns)]
+
+# Loop through each theta column to create a plot
+for (theta_column in theta_columns) {
+  p <- ggplot(factored_lfp_trial_spectral, aes(x = trial_subject_thorax_velocity, y = !!sym(theta_column), colour = trial_label, shape = competition_closeness)) +
+    geom_point(size = 2) +
+    # facet_wrap(vars(subject))
+    facet_grid(subject ~ competition_closeness) +
+    theme_classic() +
+    labs(y = theta_column)  # Adding dynamic label for y-axis
+  
+  print(p)  # Print each plot
+}
+```
+
+
+
+
+
+
+```{r}
+mixed.lmer <- lmer(trial_mPFC_power_theta ~ trial_label + competition_closeness + trial_subject_thorax_velocity + (1 | subject), data = factored_lfp_trial_spectral)
+
+summary(mixed.lmer)
+```
+
+```{r}
+mixed.lmer <- lmer(trial_BLA_LH_coherence_theta ~ trial_subject_thorax_velocity + trial_label + competition_closeness +  (1|subject) , data = factored_lfp_trial_spectral)
+
+summary(mixed.lmer)
+```
+
+```{r}
+
+unique(select(factored_lfp_trial_spectral, ))
+
+```
