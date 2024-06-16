@@ -1,0 +1,1 @@
+/nancy/user/riwata/projects/reward_comp_ext/results/2024_05_03_cohort_3_sleap_tracking/round_2_redo$ ./rce_round_2_redo_inference.sh > ./rce_round_2_redo_inference.out 2> ./rce_round_2_redo_inference.err

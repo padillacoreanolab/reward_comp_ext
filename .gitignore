@@ -21,6 +21,11 @@ temp/
 *.err
 *.out
 *.txt
+*.png
+*.pt
+*.html
+*.err
+*.out
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

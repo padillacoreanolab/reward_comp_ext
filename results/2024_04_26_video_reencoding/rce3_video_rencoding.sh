@@ -17,7 +17,13 @@ for full_path in ${video_directory}/*/*/*.h264; do
     echo Converting h264 to mp4
 
     echo Reencoding mp4
-    ffmpeg -n -i ${full_path} -c:v libx264 -pix_fmt yuv420p -preset superfast -crf 23 ${output_directory}/${base_name}.fixed.mp4
+    ffmpeg -n -i ${full_path} \
+    -c:v libx264 \
+    -pix_fmt yuv420p \
+    -preset superfast \
+    -crf 23 \
+    -filter:v "scale=1280:720:flags=lanczos" \
+    ${output_directory}/${base_name}.fixed.mp4
 
 done
 

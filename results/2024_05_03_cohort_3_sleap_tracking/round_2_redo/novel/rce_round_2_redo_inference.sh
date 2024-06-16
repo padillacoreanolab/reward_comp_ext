@@ -1,34 +1,16 @@
 #!/bin/bash
-#SBATCH --job-name=riwata_sleap
-#SBATCH --output=riwata_sleap.out
-#SBATCH --error=riwata_sleap.err
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=ryoi360@ufl.edu
-#SBATCH --nodes=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=128gb
-#SBATCH --partition=gpu
-#SBATCH --gpus=a100:2
-#SBATCH --time=48:00:00
-
-module purge
-module load conda/24.3.0
-module load cuda/11.4.3
-module load intel/2020 
-
-mamba activate /blue/npadillacoreano/ryoi360/conda/sleap_1_3_3
-mamba env list
-mamba list
 
 # Training
-round_number=round_1
-project_dir=/blue/npadillacoreano/ryoi360/projects/reward_comp/repos/reward_comp_ext/results/2024_05_03_cohort_3_sleap_tracking
+round_number=round_2
+project_dir=/nancy/projects/reward_competition_extention/results/2024_03_25_rce3_preprocessing
 cd ${project_dir}
 
-model_directory=/blue/npadillacoreano/ryoi360/projects/reward_comp/repos/reward_comp_ext/models/rce3_round_1_baseline_medium_rf.bottomup
+cd ${experiment_dir}
 
-video_directory=/blue/npadillacoreano/ryoi360/projects/reward_comp/final_proc/reencoded_videos/fixed
-output_directory=/blue/npadillacoreano/ryoi360/projects/reward_comp/temp/predicted_frames
+model_directory=/nancy/user/riwata/projects/reward_comp_ext/results/2024_05_03_cohort_3_sleap_tracking/round_2/models/rce3_round_2_baseline_medium_rf.bottomup
+
+video_directory=/scratch/back_up/reward_competition_extention/final_proc/reencoded_videos/rce_cohort_3/novel
+output_directory=/scratch/back_up/reward_competition_extention/in_progress/rce3/sleap/round_2_redo
 # Process function
 track_with_sleap() {
     input_file=$1
@@ -42,18 +24,17 @@ track_with_sleap() {
     else
         echo "Processing ${input_file}..."
 
-        sleap-track ${input_file} --tracking.tracker flowmaxtracks \
+        sleap-track ${input_file} --tracking.tracker simplemaxtracks \
         --tracking.similarity iou \
         --tracking.match greedy \
+        --batch_size 1 \
+        --max_instances ${number_of_subjects} \
         --tracking.clean_instance_count ${number_of_subjects} \
         --tracking.target_instance_count ${number_of_subjects} \
-        --max_instances ${number_of_subjects} \
-        --batch_size 1 \
-        --tracking.max_tracking True \
-        --tracking.max_tracks ${number_of_subjects} \
         -m ${model_directory} \
-        -o ${output_file}
-#        --frames 1-30000
+        -o ${output_file} \
+        --tracking.max_tracking 1 \
+        --tracking.max_tracks ${number_of_subjects}
 
     fi
 
