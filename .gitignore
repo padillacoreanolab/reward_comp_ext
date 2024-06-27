@@ -26,6 +26,8 @@ temp/
 *.html
 *.err
 *.out
+old*
+*.slp
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
