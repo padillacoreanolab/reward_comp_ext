@@ -10,3 +10,5 @@ pip install --upgrade mountainsort5==0.5.6
 
 conda install conda-forge::gitpython
 pip install openpyxl==3.1.2
+
+pip install umap-learn
