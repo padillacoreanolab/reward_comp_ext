@@ -12,3 +12,4 @@ conda install conda-forge::gitpython
 pip install openpyxl==3.1.2
 
 pip install umap-learn
+conda install conda-forge::opencv
