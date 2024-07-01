@@ -13,3 +13,4 @@ pip install openpyxl==3.1.2
 
 pip install umap-learn
 conda install conda-forge::opencv
+conda install anaconda::numpy
