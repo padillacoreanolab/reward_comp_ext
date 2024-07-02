@@ -15,3 +15,4 @@ pip install umap-learn
 conda install conda-forge::opencv
 conda install anaconda::numpy
 conda install conda-forge::imageio
+pip install hdbscan
