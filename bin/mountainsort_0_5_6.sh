@@ -12,7 +12,11 @@ conda install conda-forge::gitpython
 pip install openpyxl==3.1.2
 
 pip install umap-learn
-conda install conda-forge::opencv
-conda install anaconda::numpy
-conda install conda-forge::imageio
+conda install conda-forge::opencv --yes
+conda install anaconda::numpy --yes
+conda install conda-forge::imageio --yes
 pip install hdbscan
+conda install -c conda-forge cupy --yes
+
+conda install -c edeno spectral_connectivity --yes
+conda install seaborn -c conda-forge --yes
