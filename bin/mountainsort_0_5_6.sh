@@ -20,3 +20,5 @@ conda install -c conda-forge cupy --yes
 
 conda install -c edeno spectral_connectivity --yes
 conda install seaborn -c conda-forge --yes
+
+mamba install nvidia/label/cuda-12.2.0::cuda-toolkit --yes
