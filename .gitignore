@@ -26,8 +26,11 @@ temp/
 *.html
 *.err
 *.out
-old*
+*old*
 *.slp
+*.h5
+*Copy*
+*copy*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
