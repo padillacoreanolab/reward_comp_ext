@@ -58,6 +58,9 @@ factored_lfp_trial_spectral <- raw_lfp_trial_spectral |>
 
 unique(select(factored_lfp_trial_spectral, trial_and_competitiveness_label))
 
+unique(select(factored_lfp_trial_spectral, recording))
+
+unique(select(factored_lfp_trial_spectral, current_subject))
 
 ```
 ```{r}
@@ -90,73 +93,23 @@ print(pairwise_comparisons)
 plot(emmeans_results)
 ```
 
-```{r}
-# Define output directories
-output_dir <- "./output/"
-summary_dir <- paste0(output_dir, "summaries/")
-anova_dir <- paste0(output_dir, "anova/")
-emmeans_dir <- paste0(output_dir, "emmeans/")
-plots_dir <- paste0(output_dir, "plots/")
-
-# Create directories if they do not exist
-dir.create(output_dir, showWarnings = FALSE)
-dir.create(summary_dir, showWarnings = FALSE)
-dir.create(anova_dir, showWarnings = FALSE)
-dir.create(emmeans_dir, showWarnings = FALSE)
-dir.create(plots_dir, showWarnings = FALSE)
-
-# Get all columns that start with "cluster_mean_trial"
-all_columns <- factored_lfp_trial_spectral %>%
-  select(starts_with("cluster_mean_trial")) %>%
-  colnames()
-
-# Iterate through columns
-for (col in all_columns) {
-  # Print the column name
-  print(paste("Column:", col))
-  
-  # Construct the formula for the model
-  formula <- as.formula(paste(col, "~ trial_and_competitiveness_label + (1 | current_subject)"))
-  
-  # Fit the linear mixed-effects model
-  model <- lmer(formula, data = factored_lfp_trial_spectral)
-  
-# Save summary of the model
-  summary_file <- paste0(summary_dir, col, "_summary.txt")
-  model_summary <- summary(model)
-  capture.output(model_summary, file = summary_file)
-  
-  # Perform ANOVA to test for significant differences in fixed effects and save
-  anova_file <- paste0(anova_dir, col, "_anova.txt")
-  anova_results <- anova(model)
-  capture.output(anova_results, file = anova_file)
-  
-  # Perform post-hoc pairwise comparisons with adjustments for multiple comparisons and save
-  emmeans_file <- paste0(emmeans_dir, col, "_emmeans.txt")
-  emmeans_results <- emmeans(model, ~ trial_and_competitiveness_label)
-  pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
-  capture.output(pairwise_comparisons, file = emmeans_file)
-  
-  # Plotting the estimated marginal means (least-squares means) and save
-  plot_file <- paste0(plots_dir, col, "_emmeans_plot.png")
-  plot(emmeans_results) + ggtitle(paste("Estimated Marginal Means for", col))
-  ggsave(plot_file)
-}
-```
 
 ```{r}
+
 # Define output directories
 output_dir <- "output/"
 summary_dir <- paste0(output_dir, "summaries/")
 anova_dir <- paste0(output_dir, "anova/")
-emmeans_dir <- paste0(output_dir, "emmeans/")
+emmeans_txt_dir <- paste0(output_dir, "emmeans_txt/")
+emmeans_csv_dir <- paste0(output_dir, "emmeans_csv/")
 plots_dir <- paste0(output_dir, "plots/")
 
 # Create directories if they do not exist
 dir.create(output_dir, showWarnings = FALSE)
 dir.create(summary_dir, showWarnings = FALSE)
 dir.create(anova_dir, showWarnings = FALSE)
-dir.create(emmeans_dir, showWarnings = FALSE)
+dir.create(emmeans_txt_dir, showWarnings = FALSE)
+dir.create(emmeans_csv_dir, showWarnings = FALSE)
 dir.create(plots_dir, showWarnings = FALSE)
 
 # Get all columns that start with "cluster_mean_trial"
@@ -164,20 +117,18 @@ all_columns <- factored_lfp_trial_spectral %>%
   select(starts_with("cluster_mean_trial")) %>%
   colnames()
 
-# Initialize an empty dataframe to store all pairwise comparisons
-all_pairwise_comparisons <- data.frame()
-
 # Iterate through columns
 for (col in all_columns) {
   # Print the column name
   print(paste("Column:", col))
   
   # Construct the formula for the model
-  formula <- as.formula(paste(col, "~ trial_and_competitiveness_label + (1 | current_subject)"))
+  formula <- as.formula(paste(col, "~ 1 + trial_and_competitiveness_label + (1 | recording)"))
   
   # Fit the linear mixed-effects model
-  model <- lmer(formula, data = factored_lfp_trial_spectral)
-  
+  model <- lmer(formula, data = factored_lfp_trial_spectral |> drop_na(!!sym(col)))
+#  model <- lmer(formula, data = factored_lfp_trial_spectral)
+
   # Save summary of the model
   summary_file <- paste0(summary_dir, col, "_summary.txt")
   model_summary <- summary(model)
@@ -188,148 +139,18 @@ for (col in all_columns) {
   anova_results <- anova(model)
   capture.output(anova_results, file = anova_file)
   
-  # Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
-  emmeans_results <- emmeans(model, ~ trial_and_competitiveness_label)
-  pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
-  
-  # Convert pairwise comparisons to dataframe and add column name
-  pairwise_df <- as.data.frame(pairwise_comparisons)
-  pairwise_df$column <- col
-  
-  # Append to the all_pairwise_comparisons dataframe
-  all_pairwise_comparisons <- rbind(all_pairwise_comparisons, pairwise_df)
-  
+  # Perform post-hoc pairwise comparisons with adjustments for multiple comparisons and save
+  emmeans_file <- paste0(emmeans_txt_dir, col, "_emmeans.txt")
+  emmeans_csv <- paste0(emmeans_csv_dir, col, "_emmeans.csv")
+  emmeans_results <- emmeans(model, pairwise ~ trial_and_competitiveness_label)
+  pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+  capture.output(pairwise_comparisons, file = emmeans_file)
+  write.csv(summary(pairwise_comparisons), file=emmeans_csv)
+
   # Plotting the estimated marginal means (least-squares means) and save
   plot_file <- paste0(plots_dir, col, "_emmeans_plot.png")
   plot(emmeans_results) + ggtitle(paste("Estimated Marginal Means for", col))
   ggsave(plot_file)
 }
-
-# Save all pairwise comparisons to a CSV file
-pairwise_comparisons_file <- paste0(emmeans_dir, "all_pairwise_comparisons.csv")
-write.csv(all_pairwise_comparisons, pairwise_comparisons_file, row.names = FALSE)
-
-```
-
-
-
-
-
-
-
-
-```{r}
-
-all_columns <- factored_lfp_trial_spectral |>
-  select(starts_with("cluster_mean_trial")) |>
-  colnames()
-
-# Iterate through columns
-for (col in all_columns) {
-  # Example operation: print the column name and its squared values
-  print(paste("Column:", col))
-  
-  model <- lmer(col ~ trial_and_competitiveness_label + (1 | current_subject), data = factored_lfp_trial_spectral)
-  
-  # Summary of the model
-  model_summary <- summary(model)
-  
-  # Perform ANOVA to test for significant differences in fixed effects
-  anova_results <- anova(model)
-  print(anova_results)
-  
-  # Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
-  emmeans_results <- emmeans(model, ~ trial_and_competitiveness_label)
-  pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
-  print(pairwise_comparisons)
-  
-  # Plotting the estimated marginal means (least-squares means)
-  plot(emmeans_results)
-  
-}
-```
-```{r}
-
-
-
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-```{r}
-ggplot(factored_lfp_trial_spectral, aes(x = trial_subject_thorax_velocity, y = trial_BLA_power_theta, colour = subject, shape = trial_label)) +
-    geom_point(size = 2) +
-  theme_classic()
-```
-```{r}
-ggplot(factored_lfp_trial_spectral, aes(x = trial_subject_thorax_velocity, y = trial_BLA_power_theta, colour = trial_label, shape = trial_label)) +
-    geom_point(size = 2) +
-  theme_classic()
-```
-
-
-```{r}
-# List of all column names that contain 'theta'
-theta_columns <- grep("theta", names(factored_lfp_trial_spectral), value = TRUE)
-
-# Loop through each theta column to create a plot
-for (theta_column in theta_columns) {
-  p <- ggplot(factored_lfp_trial_spectral, aes(x = trial_subject_thorax_velocity, y = !!sym(theta_column), colour = trial_label, shape = trial_label)) +
-    geom_point(size = 2) +
-    theme_classic() +
-    labs(y = theta_column)  # Adding dynamic label for y-axis
-  
-  print(p)  # Print each plot
-}
-```
-```{r}
-# List of all column names that contain 'theta'
-theta_columns <- names(factored_lfp_trial_spectral)[grep("theta", names(factored_lfp_trial_spectral))]
-theta_columns <- theta_columns[grep("trial", theta_columns)]
-
-# Loop through each theta column to create a plot
-for (theta_column in theta_columns) {
-  p <- ggplot(factored_lfp_trial_spectral, aes(x = trial_subject_thorax_velocity, y = !!sym(theta_column), colour = trial_label, shape = competition_closeness)) +
-    geom_point(size = 2) +
-    # facet_wrap(vars(subject))
-    facet_grid(subject ~ competition_closeness) +
-    theme_classic() +
-    labs(y = theta_column)  # Adding dynamic label for y-axis
-  
-  print(p)  # Print each plot
-}
-```
-
-
-
-
-
-
-```{r}
-mixed.lmer <- lmer(trial_mPFC_power_theta ~ trial_label + competition_closeness + trial_subject_thorax_velocity + (1 | subject), data = factored_lfp_trial_spectral)
-
-summary(mixed.lmer)
-```
-
-```{r}
-mixed.lmer <- lmer(trial_BLA_LH_coherence_theta ~ trial_subject_thorax_velocity + trial_label + competition_closeness +  (1|subject) , data = factored_lfp_trial_spectral)
-
-summary(mixed.lmer)
-```
-
-```{r}
-
-unique(select(factored_lfp_trial_spectral, ))
 
 ```
