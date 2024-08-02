@@ -123,7 +123,7 @@ for (col in all_columns) {
   print(paste("Column:", col))
   
   # Construct the formula for the model
-  formula <- as.formula(paste(col, "~ 1 + trial_and_competitiveness_label + (1 | recording)"))
+  formula <- as.formula(paste(col, "~ 1 + trial_and_competitiveness_label + (1 | current_subject)"))
   
   # Fit the linear mixed-effects model
   model <- lmer(formula, data = factored_lfp_trial_spectral |> drop_na(!!sym(col)))
