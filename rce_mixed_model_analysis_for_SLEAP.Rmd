@@ -8,14 +8,26 @@ output:
 ---
 
 ```{r}
-oo <- options(repos = "https://cran.r-project.org/")
+# oo <- options(repos = "https://cran.r-project.org/")
 # detach("package:Matrix", unload = TRUE)
-utils::install.packages("Matrix", dependencies=TRUE)
-detach("package:lme4", unload = TRUE)
-utils::install.packages("lme4", type = "source", dependencies=TRUE)
+# utils::install.packages("Matrix", type = "source", dependencies=TRUE)
+# detach("package:lme4", unload = TRUE)
+# utils::install.packages("lme4", type = "source", dependencies=TRUE)
+# 
+# options(oo)
+```
 
+```{r}
+oo <- options(repos = "https://cran.r-project.org/")
+install.packages("Matrix", type="binary")
 options(oo)
 ```
+```{r}
+oo <- options(repos = "https://cran.r-project.org/")
+install.packages("lme4", type="binary")
+options(oo)
+```
+
 
 ```{r}
 ```
@@ -71,11 +83,35 @@ ggplot(factored_lfp_trial_spectral, aes(x=mean_velocity, colour=competition_and_
   geom_density() + 
   facet_wrap(. ~ subject_id)
 ```
+```{r}
+table(factored_lfp_trial_spectral$subject_id)
+
+summary(factored_lfp_trial_spectral)
+```
 
 
 
 ```{r}
 model <- lmer(mean_velocity ~ competition_and_trial_label + (1 | subject_id), data = factored_lfp_trial_spectral)
+
+# Summary of the model
+model_summary <- summary(model)
+
+# Perform ANOVA to test for significant differences in fixed effects
+anova_results <- anova(model)
+print(anova_results)
+
+# Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
+emmeans_results <- emmeans(model, ~ competition_and_trial_label)
+pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
+print(pairwise_comparisons)
+
+# Plotting the estimated marginal means (least-squares means)
+plot(emmeans_results)
+```
+
+```{r}
+model <- lmer(mean_distance ~ competition_and_trial_label + (1 | subject_id), data = factored_lfp_trial_spectral)
 
 # Summary of the model
 model_summary <- summary(model)
