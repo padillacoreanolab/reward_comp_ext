@@ -1,0 +1,156 @@
+---
+title: ""
+author: ""
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+oo <- options(repos = "https://cran.r-project.org/")
+# detach("package:Matrix", unload = TRUE)
+utils::install.packages("Matrix", dependencies=TRUE)
+detach("package:lme4", unload = TRUE)
+utils::install.packages("lme4", type = "source", dependencies=TRUE)
+
+options(oo)
+```
+
+```{r}
+```
+
+```{r setup, include=FALSE}
+library("tidyverse")
+# install.packages("tidymodels")
+library(tidymodels)
+# install.packages("knitr")
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+# install.packages("car")
+library(car)
+
+#install.packages("emmeans")
+library(emmeans)
+# install.packages("lme4", type = "source")
+
+library(lme4)
+options(scipen = 3, digits = 5) 
+```
+
+```{r}
+raw_lfp_trial_spectral <- read.csv("./results/2024_09_02_behavioral_reward_comp/proc/manual_trials_mean_distance_and_velocity.csv")
+```
+
+```{r}
+factored_lfp_trial_spectral <- raw_lfp_trial_spectral |>
+  
+  # Demographics
+  mutate(subject_id = as_factor(subject_id)) |>
+  mutate(competition_and_trial_label = as_factor(competition_and_trial_label))
+
+
+
+
+```
+
+```{r}
+
+unique(select(factored_lfp_trial_spectral, competition_and_trial_label))
+
+unique(select(factored_lfp_trial_spectral, subject_id))
+
+```
+```{r}
+colnames(factored_lfp_trial_spectral)
+```
+
+```{r}
+# Density plots with means
+ggplot(factored_lfp_trial_spectral, aes(x=mean_velocity, colour=competition_and_trial_label)) +
+  geom_density() + 
+  facet_wrap(. ~ subject_id)
+```
+
+
+
+```{r}
+model <- lmer(mean_velocity ~ competition_and_trial_label + (1 | subject_id), data = factored_lfp_trial_spectral)
+
+# Summary of the model
+model_summary <- summary(model)
+
+# Perform ANOVA to test for significant differences in fixed effects
+anova_results <- anova(model)
+print(anova_results)
+
+# Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
+emmeans_results <- emmeans(model, ~ competition_and_trial_label)
+pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
+print(pairwise_comparisons)
+
+# Plotting the estimated marginal means (least-squares means)
+plot(emmeans_results)
+```
+
+
+```{r}
+
+# Define output directories
+output_dir <- "output/"
+summary_dir <- paste0(output_dir, "summaries/")
+anova_dir <- paste0(output_dir, "anova/")
+emmeans_txt_dir <- paste0(output_dir, "emmeans_txt/")
+emmeans_csv_dir <- paste0(output_dir, "emmeans_csv/")
+plots_dir <- paste0(output_dir, "plots/")
+
+# Create directories if they do not exist
+dir.create(output_dir, showWarnings = FALSE)
+dir.create(summary_dir, showWarnings = FALSE)
+dir.create(anova_dir, showWarnings = FALSE)
+dir.create(emmeans_txt_dir, showWarnings = FALSE)
+dir.create(emmeans_csv_dir, showWarnings = FALSE)
+dir.create(plots_dir, showWarnings = FALSE)
+
+# Get all columns that start with "cluster_mean_trial"
+all_columns <- factored_lfp_trial_spectral %>%
+  select(starts_with("cluster_mean_trial")) %>%
+  colnames()
+
+# Iterate through columns
+for (col in all_columns) {
+  # Print the column name
+  print(paste("Column:", col))
+  
+  # Construct the formula for the model
+  formula <- as.formula(paste(col, "~ 1 + trial_and_competitiveness_label + (1 | current_subject)"))
+  
+  # Fit the linear mixed-effects model
+  model <- lmer(formula, data = factored_lfp_trial_spectral |> drop_na(!!sym(col)))
+#  model <- lmer(formula, data = factored_lfp_trial_spectral)
+
+  # Save summary of the model
+  summary_file <- paste0(summary_dir, col, "_summary.txt")
+  model_summary <- summary(model)
+  capture.output(model_summary, file = summary_file)
+  
+  # Perform ANOVA to test for significant differences in fixed effects and save
+  anova_file <- paste0(anova_dir, col, "_anova.txt")
+  anova_results <- anova(model)
+  capture.output(anova_results, file = anova_file)
+  
+  # Perform post-hoc pairwise comparisons with adjustments for multiple comparisons and save
+  emmeans_file <- paste0(emmeans_txt_dir, col, "_emmeans.txt")
+  emmeans_csv <- paste0(emmeans_csv_dir, col, "_emmeans.csv")
+  emmeans_results <- emmeans(model, pairwise ~ trial_and_competitiveness_label)
+  pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+  capture.output(pairwise_comparisons, file = emmeans_file)
+  write.csv(summary(pairwise_comparisons), file=emmeans_csv)
+
+  # Plotting the estimated marginal means (least-squares means) and save
+  plot_file <- paste0(plots_dir, col, "_emmeans_plot.png")
+  plot(emmeans_results) + ggtitle(paste("Estimated Marginal Means for", col))
+  ggsave(plot_file)
+}
+
+```
