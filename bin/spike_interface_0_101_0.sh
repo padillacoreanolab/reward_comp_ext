@@ -6,18 +6,6 @@ mamba create -n spike_interface_0_101_0 python=3.10 --yes
 # Turning on created environment
 mamba activate spike_interface_0_101_0
 
-
-
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-### To use GPU
-mamba install pytorch pytorch-cuda=12.1 -c pytorch -c nvidia
-
-### To do GPU calculations with Numpy
-mamba install -c conda-forge cupy --yes
-
 ### To use Jupyterlab
 mamba install jupyterlab -c conda-forge --yes
 
@@ -29,7 +17,24 @@ mamba install -c conda-forge openpyxl --yes
 
 ### To use spikeinterface
 pip install spikeinterface[full,widgets]==0.100.8
-pip install --upgrade mountainsort5==0.5.6
+
+### To make statistical models
+mamba install -c conda-forge statsmodels --yes
+
+## UMAP projections
+mamba install -c conda-forge umap-learn --yes
+
+## Seaborn for plotting
+conda install seaborn -c conda-forge
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+### To use GPU
+mamba install pytorch pytorch-cuda=12.1 -c pytorch -c nvidia
+
+### To do GPU calculations with Numpy
+mamba install -c conda-forge cupy --yes
+
 
 ### To calculate spectral metrics
 mamba install -c edeno spectral_connectivity --yes
