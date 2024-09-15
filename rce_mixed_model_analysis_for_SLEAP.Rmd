@@ -103,7 +103,7 @@ print(anova_results)
 
 # Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
 emmeans_results <- emmeans(model, ~ competition_and_trial_label)
-pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
+pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
 print(pairwise_comparisons)
 
 # Plotting the estimated marginal means (least-squares means)
@@ -122,7 +122,166 @@ print(anova_results)
 
 # Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
 emmeans_results <- emmeans(model, ~ competition_and_trial_label)
-pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
+pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+print(pairwise_comparisons)
+
+# Plotting the estimated marginal means (least-squares means)
+plot(emmeans_results)
+```
+```{r}
+mean_distance_df <- read.csv("./results/2024_09_02_behavioral_reward_comp/proc/mean_distance_competitiveness.csv")
+
+mean_velocity_df <- read.csv("./results/2024_09_02_behavioral_reward_comp/proc/mean_velocity_competitiveness.csv")
+```
+
+```{r}
+factored_mean_velocity_df <- mean_velocity_df |>
+  
+  # Demographics
+  mutate(subject_id = as_factor(subject_id)) |>
+  mutate(competition_and_trial_label = as_factor(competition_and_trial_label)) |>
+  mutate(trial_label = as_factor(trial_label)) |>
+  mutate(competition_label = as_factor(competition_label)) |>
+  mutate(trial_label_and_competitiveness_grouping = as_factor(trial_label_and_competitiveness_grouping)) 
+
+  
+  
+
+factored_mean_distance_df <- mean_distance_df |>
+  
+  # Demographics
+  mutate(subject_id = as_factor(subject_id)) |>
+  mutate(competition_and_trial_label = as_factor(competition_and_trial_label)) |>
+  mutate(trial_label = as_factor(trial_label)) |>
+  mutate(competition_label = as_factor(competition_label))  |> mutate(trial_label_and_competitiveness_grouping = as_factor(trial_label_and_competitiveness_grouping)) 
+
+
+
+
+
+```
+
+```{r}
+
+unique(select(factored_mean_distance_df, competition_and_trial_label))
+
+unique(select(factored_mean_distance_df, subject_id))
+
+unique(select(factored_mean_velocity_df, competition_and_trial_label))
+
+unique(select(factored_mean_velocity_df, subject_id))
+
+```
+```{r}
+colnames(factored_mean_distance_and_velocity_df)
+```
+
+```{r}
+# Density plots with means
+ggplot(factored_mean_velocity_df, aes(x=mean_velocity, colour=competition_and_trial_label)) +
+  geom_density() + 
+  facet_wrap(. ~ subject_id)
+```
+```{r}
+table(factored_lfp_trial_spectral$subject_id)
+
+summary(factored_lfp_trial_spectral)
+```
+
+
+
+```{r}
+model <- lmer(mean_velocity ~ trial_label_and_competitiveness_grouping + (1 | subject_id), data = factored_mean_velocity_df)
+
+# Summary of the model
+model_summary <- summary(model)
+
+# Perform ANOVA to test for significant differences in fixed effects
+anova_results <- anova(model)
+print(anova_results)
+
+# Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
+emmeans_results <- emmeans(model, ~ trial_label_and_competitiveness_grouping)
+pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+print(pairwise_comparisons)
+
+# Plotting the estimated marginal means (least-squares means)
+plot(emmeans_results)
+```
+```{r}
+model <- lmer(mean_distance ~ trial_label_and_competitiveness_grouping + (1 | subject_id), data = factored_mean_distance_df)
+
+# Summary of the model
+model_summary <- summary(model)
+
+# Perform ANOVA to test for significant differences in fixed effects
+anova_results <- anova(model)
+print(anova_results)
+
+# Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
+emmeans_results <- emmeans(model, ~ trial_label_and_competitiveness_grouping)
+pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+print(pairwise_comparisons)
+
+# Plotting the estimated marginal means (least-squares means)
+plot(emmeans_results)
+```
+
+```{r}
+ggplot(factored_mean_velocity_df, aes(factor(trial_label), mean_velocity)) +
+  geom_violin(aes(fill = factor(competitiveness_grouping)))
+
+```
+
+
+
+```{r}
+ggplot(factored_mean_distance_df, aes(factor(trial_label), mean_distance)) +
+  geom_violin(aes(fill = factor(competitiveness_grouping)))
+  
+```
+
+
+```{r}
+```
+
+
+
+
+
+
+```{r}
+model <- lmer(mean_distance ~ competitiveness_grouping + (1 | subject_id), data = filter(factored_mean_distance_df, trial_label == "lose"))
+
+# Summary of the model
+model_summary <- summary(model)
+
+# Perform ANOVA to test for significant differences in fixed effects
+anova_results <- anova(model)
+print(anova_results)
+
+# Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
+emmeans_results <- emmeans(model, ~ competitiveness_grouping)
+pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+print(pairwise_comparisons)
+
+# Plotting the estimated marginal means (least-squares means)
+plot(emmeans_results)
+```
+
+```{r}
+model <- lmer(mean_distance ~ competitiveness_grouping + (1 | subject_id), data = filter(factored_mean_distance_df, trial_label == "win"))
+
+# Summary of the model
+model_summary <- summary(model)
+
+# Perform ANOVA to test for significant differences in fixed effects
+anova_results <- anova(model)
+print(anova_results)
+
+# Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
+emmeans_results <- emmeans(model, ~ competitiveness_grouping)
+pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
 print(pairwise_comparisons)
 
 # Plotting the estimated marginal means (least-squares means)
