@@ -25,8 +25,10 @@ mamba install -c conda-forge statsmodels --yes
 mamba install -c conda-forge umap-learn --yes
 
 ## Seaborn for plotting
-conda install seaborn -c conda-forge
+conda install seaborn -c conda-forge --yes
 
+## For Medpc analysis
+pip install medpc2excel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### To use GPU
