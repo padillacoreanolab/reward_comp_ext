@@ -96,63 +96,63 @@ plot(emmeans_results)
 
 ```{r}
 
-# Define output directories
-output_dir <- "output/"
-summary_dir <- paste0(output_dir, "summaries/")
-anova_dir <- paste0(output_dir, "anova/")
-emmeans_txt_dir <- paste0(output_dir, "emmeans_txt/")
-emmeans_csv_dir <- paste0(output_dir, "emmeans_csv/")
-plots_dir <- paste0(output_dir, "plots/")
-
-# Create directories if they do not exist
-dir.create(output_dir, showWarnings = FALSE)
-dir.create(summary_dir, showWarnings = FALSE)
-dir.create(anova_dir, showWarnings = FALSE)
-dir.create(emmeans_txt_dir, showWarnings = FALSE)
-dir.create(emmeans_csv_dir, showWarnings = FALSE)
-dir.create(plots_dir, showWarnings = FALSE)
-
-# Get all columns that start with "cluster_mean_trial"
-all_columns <- factored_lfp_trial_spectral %>%
-  select(-starts_with("cluster_mean_trial_subject_thorax")) %>%
-  select(starts_with("cluster_mean_trial")) %>%
-  colnames()
-
-# Iterate through columns
-for (col in all_columns) {
-  # Print the column name
-  print(paste("Column:", col))
-  
-  # Construct the formula for the model
-  formula <- as.formula(paste(col, "~ trial_and_competitiveness_label + cluster_mean_trial_subject_thorax_velocity + (1 | current_subject)"))
-  
-  # Fit the linear mixed-effects model
-  model <- lmer(formula, data = factored_lfp_trial_spectral |> drop_na(!!sym(col)))
-#  model <- lmer(formula, data = factored_lfp_trial_spectral)
-
-  # Save summary of the model
-  summary_file <- paste0(summary_dir, col, "_summary.txt")
-  model_summary <- summary(model)
-  capture.output(model_summary, file = summary_file)
-  
-  # Perform ANOVA to test for significant differences in fixed effects and save
-  anova_file <- paste0(anova_dir, col, "_anova.txt")
-  anova_results <- anova(model)
-  capture.output(anova_results, file = anova_file)
-  
-  # Perform post-hoc pairwise comparisons with adjustments for multiple comparisons and save
-  emmeans_file <- paste0(emmeans_txt_dir, col, "_emmeans.txt")
-  emmeans_csv <- paste0(emmeans_csv_dir, col, "_emmeans.csv")
-  emmeans_results <- emmeans(model, pairwise ~ trial_and_competitiveness_label)
-  pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
-  capture.output(pairwise_comparisons, file = emmeans_file)
-  write.csv(summary(pairwise_comparisons), file=emmeans_csv)
-
-  # Plotting the estimated marginal means (least-squares means) and save
-  plot_file <- paste0(plots_dir, col, "_emmeans_plot.png")
-  plot(emmeans_results) + ggtitle(paste("Estimated Marginal Means for", col))
-  ggsave(plot_file)
-}
+# # Define output directories
+# output_dir <- "output/"
+# summary_dir <- paste0(output_dir, "summaries/")
+# anova_dir <- paste0(output_dir, "anova/")
+# emmeans_txt_dir <- paste0(output_dir, "emmeans_txt/")
+# emmeans_csv_dir <- paste0(output_dir, "emmeans_csv/")
+# plots_dir <- paste0(output_dir, "plots/")
+# 
+# # Create directories if they do not exist
+# dir.create(output_dir, showWarnings = FALSE)
+# dir.create(summary_dir, showWarnings = FALSE)
+# dir.create(anova_dir, showWarnings = FALSE)
+# dir.create(emmeans_txt_dir, showWarnings = FALSE)
+# dir.create(emmeans_csv_dir, showWarnings = FALSE)
+# dir.create(plots_dir, showWarnings = FALSE)
+# 
+# # Get all columns that start with "cluster_mean_trial"
+# all_columns <- factored_lfp_trial_spectral %>%
+#   select(-starts_with("cluster_mean_trial_subject_thorax")) %>%
+#   select(starts_with("cluster_mean_trial")) %>%
+#   colnames()
+# 
+# # Iterate through columns
+# for (col in all_columns) {
+#   # Print the column name
+#   print(paste("Column:", col))
+#   
+#   # Construct the formula for the model
+#   formula <- as.formula(paste(col, "~ trial_and_competitiveness_label + cluster_mean_trial_subject_thorax_velocity + (1 | current_subject)"))
+#   
+#   # Fit the linear mixed-effects model
+#   model <- lmer(formula, data = factored_lfp_trial_spectral |> drop_na(!!sym(col)))
+# #  model <- lmer(formula, data = factored_lfp_trial_spectral)
+# 
+#   # Save summary of the model
+#   summary_file <- paste0(summary_dir, col, "_summary.txt")
+#   model_summary <- summary(model)
+#   capture.output(model_summary, file = summary_file)
+#   
+#   # Perform ANOVA to test for significant differences in fixed effects and save
+#   anova_file <- paste0(anova_dir, col, "_anova.txt")
+#   anova_results <- anova(model)
+#   capture.output(anova_results, file = anova_file)
+#   
+#   # Perform post-hoc pairwise comparisons with adjustments for multiple comparisons and save
+#   emmeans_file <- paste0(emmeans_txt_dir, col, "_emmeans.txt")
+#   emmeans_csv <- paste0(emmeans_csv_dir, col, "_emmeans.csv")
+#   emmeans_results <- emmeans(model, pairwise ~ trial_and_competitiveness_label)
+#   pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+#   capture.output(pairwise_comparisons, file = emmeans_file)
+#   write.csv(summary(pairwise_comparisons), file=emmeans_csv)
+# 
+#   # Plotting the estimated marginal means (least-squares means) and save
+#   plot_file <- paste0(plots_dir, col, "_emmeans_plot.png")
+#   plot(emmeans_results) + ggtitle(paste("Estimated Marginal Means for", col))
+#   ggsave(plot_file)
+# }
 
 ```
 
@@ -199,11 +199,12 @@ for (col in all_columns) {
   original_values <- model_data[used_indices, col]
   label_values <- model_data[used_indices, "trial_and_competitiveness_label"]
   velocity_values <- model_data[used_indices, "cluster_mean_trial_subject_thorax_velocity"]
+  index_values <- model_data[used_indices, "X"]
 
 
   
   # Create a dataframe with the original and predicted values
-  predicted_df <- data.frame(subject_id = subject_values, original_value = original_values, predicted_value = predicted_values, col_name = col, trial_and_competitiveness_label=label_values, cluster_mean_trial_subject_thorax_velocity=velocity_values)
+  predicted_df <- data.frame(subject_id = subject_values, original_value = original_values, predicted_value = predicted_values, col_name = col, trial_and_competitiveness_label=label_values, cluster_mean_trial_subject_thorax_velocity=velocity_values, index_num=index_values)
   
   # Save the dataframe to a CSV file
   write.csv(predicted_df, file = predicted_file)
