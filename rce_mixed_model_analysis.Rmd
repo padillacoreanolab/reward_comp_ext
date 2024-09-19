@@ -37,7 +37,9 @@ options(scipen = 3, digits = 5)
 ```
 
 ```{r}
-raw_lfp_trial_spectral <- read.csv("./competitiveness_trials_and_spectral_mean.csv")
+# raw_lfp_trial_spectral <- read.csv("./competitiveness_trials_and_spectral_mean.csv")
+raw_lfp_trial_spectral <- read.csv("./export_cluster_exploded_TRIALS_AND_SPECTRAL_DF.csv")
+
 ```
 
 ```{r}
@@ -45,9 +47,9 @@ factored_lfp_trial_spectral <- raw_lfp_trial_spectral |>
   
   # Demographics
   mutate(trial_and_competitiveness_label = as_factor(trial_and_competitiveness_label)) |>
-  mutate(current_subject = as_factor(current_subject)) |>
-  mutate(recording = as_factor(recording)) |>
-  mutate(video_name = as_factor(video_name))
+  mutate(current_subject = as_factor(current_subject)) #|>
+  # mutate(recording = as_factor(recording)) |>
+  # mutate(video_name = as_factor(video_name))
 
 
 
@@ -57,8 +59,6 @@ factored_lfp_trial_spectral <- raw_lfp_trial_spectral |>
 ```{r}
 
 unique(select(factored_lfp_trial_spectral, trial_and_competitiveness_label))
-
-unique(select(factored_lfp_trial_spectral, recording))
 
 unique(select(factored_lfp_trial_spectral, current_subject))
 
@@ -114,6 +114,7 @@ dir.create(plots_dir, showWarnings = FALSE)
 
 # Get all columns that start with "cluster_mean_trial"
 all_columns <- factored_lfp_trial_spectral %>%
+  select(-starts_with("cluster_mean_trial_subject_thorax")) %>%
   select(starts_with("cluster_mean_trial")) %>%
   colnames()
 
@@ -123,7 +124,7 @@ for (col in all_columns) {
   print(paste("Column:", col))
   
   # Construct the formula for the model
-  formula <- as.formula(paste(col, "~ 1 + trial_and_competitiveness_label + (1 | current_subject)"))
+  formula <- as.formula(paste(col, "~ trial_and_competitiveness_label + cluster_mean_trial_subject_thorax_velocity + (1 | current_subject)"))
   
   # Fit the linear mixed-effects model
   model <- lmer(formula, data = factored_lfp_trial_spectral |> drop_na(!!sym(col)))
@@ -146,6 +147,88 @@ for (col in all_columns) {
   pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
   capture.output(pairwise_comparisons, file = emmeans_file)
   write.csv(summary(pairwise_comparisons), file=emmeans_csv)
+
+  # Plotting the estimated marginal means (least-squares means) and save
+  plot_file <- paste0(plots_dir, col, "_emmeans_plot.png")
+  plot(emmeans_results) + ggtitle(paste("Estimated Marginal Means for", col))
+  ggsave(plot_file)
+}
+
+```
+
+```{r}
+# Iterate through columns
+for (col in all_columns) {
+  # Print the column name
+  print(paste("Column:", col))
+  
+  # Construct the formula for the model
+  formula <- as.formula(paste(col, "~ trial_and_competitiveness_label + cluster_mean_trial_subject_thorax_velocity + (1 | current_subject)"))
+  
+  # Fit the linear mixed-effects model
+  model_data <- factored_lfp_trial_spectral |> drop_na(!!sym(col)) # Drop NA for the specific column
+  model <- lmer(formula, data = model_data)
+
+  # Save summary of the model
+  summary_file <- paste0(summary_dir, col, "_summary.txt")
+  model_summary <- summary(model)
+  capture.output(model_summary, file = summary_file)
+  
+  # Perform ANOVA to test for significant differences in fixed effects and save
+  anova_file <- paste0(anova_dir, col, "_anova.txt")
+  anova_results <- anova(model)
+  capture.output(anova_results, file = anova_file)
+  
+  # Perform post-hoc pairwise comparisons with adjustments for multiple comparisons and save
+  emmeans_file <- paste0(emmeans_txt_dir, col, "_emmeans.txt")
+  emmeans_csv <- paste0(emmeans_csv_dir, col, "_emmeans.csv")
+  emmeans_results <- emmeans(model, pairwise ~ trial_and_competitiveness_label)
+  pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+  capture.output(pairwise_comparisons, file = emmeans_file)
+  write.csv(summary(pairwise_comparisons), file=emmeans_csv)
+
+  # Save predicted values (fitted values)
+  predicted_file <- paste0(predicted_dir, col, "_predicted.csv")
+  
+  # Extract the row indices used in the model
+  used_indices <- rownames(model.frame(model)) # Rows used in the model
+  
+  # Extract the relevant data for those rows
+  predicted_values <- fitted(model)
+  subject_values <- model_data[used_indices, "current_subject"]
+  original_values <- model_data[used_indices, col]
+  label_values <- model_data[used_indices, "trial_and_competitiveness_label"]
+  velocity_values <- model_data[used_indices, "cluster_mean_trial_subject_thorax_velocity"]
+
+
+  
+  # Create a dataframe with the original and predicted values
+  predicted_df <- data.frame(subject_id = subject_values, original_value = original_values, predicted_value = predicted_values, col_name = col, trial_and_competitiveness_label=label_values, cluster_mean_trial_subject_thorax_velocity=velocity_values)
+  
+  # Save the dataframe to a CSV file
+  write.csv(predicted_df, file = predicted_file)
+
+  # Plotting the estimated marginal means (least-squares means) and save
+  plot_file <- paste0(plots_dir, col, "_emmeans_plot.png")
+  plot(emmeans_results) + ggtitle(paste("Estimated Marginal Means for", col))
+  ggsave(plot_file)
+}
+```
+
+```{r}
+# factored_lfp_trial_spectral[["current_subject"]]
+predicted_values
+```
+
+
+```{r}
+data.frame(factored_lfp_trial_spectral[["current_subject"]], factored_lfp_trial_spectral[[col]], predicted_values)
+```
+
+
+```{r}
+colnames(predicted_df) <- c("subject_id", "original_value", "predicted_value")
+  write.csv(predicted_df, file = predicted_file)
 
   # Plotting the estimated marginal means (least-squares means) and save
   plot_file <- paste0(plots_dir, col, "_emmeans_plot.png")

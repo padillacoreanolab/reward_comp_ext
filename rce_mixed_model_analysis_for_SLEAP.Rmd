@@ -152,7 +152,10 @@ plot(emmeans_results)
 
 
 
+```{r}
+model
 
+```
 
 
 
