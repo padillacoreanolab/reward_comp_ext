@@ -256,7 +256,10 @@ for (col in all_columns) {
   # Save pairwise comparisons to text file
   pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
   capture.output(pairwise_comparisons, file = emmeans_file)
-  write.csv(summary(pairwise_comparisons), file=emmeans_csv)
+  pair_wise_df <- summary(pairwise_comparisons)
+  pair_wise_df$spectra_metric <- col  # Add the column name as a new column
+
+  write.csv(pair_wise_df, file=emmeans_csv)
 
   # Save predicted values (fitted values)
   predicted_file <- paste0(predicted_dir, col, "_predicted.csv")
