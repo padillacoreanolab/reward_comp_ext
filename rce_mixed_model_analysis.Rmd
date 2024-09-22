@@ -85,7 +85,7 @@ print(anova_results)
 
 # Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
 emmeans_results <- emmeans(model, ~ trial_and_competitiveness_label)
-pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
+pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
 print(pairwise_comparisons)
 
 # Plotting the estimated marginal means (least-squares means)
@@ -131,15 +131,18 @@ for (col in all_columns) {
   print(paste("Column:", col))
   
   # Construct the formula for the model
-    formula <- as.formula(paste(col, "~ trial_and_competitiveness_label + cluster_mean_trial_subject_thorax_velocity + (1 | current_subject)"))
+    formula <- as.formula(paste(col, "~ trial_and_competitiveness_label + cluster_mean_trial_subject_thorax_velocity"))
+    #     formula <- as.formula(paste(col, "~ trial_and_competitiveness_label + cluster_mean_trial_subject_thorax_velocity + (1 | current_subject)"))
+
   
   # Fit the linear mixed-effects model
   model_data <- factored_lfp_trial_spectral |> drop_na(!!sym(col)) |>
     filter(!!sym(col) > 0) |>
     filter(!!sym(col) < 1)
     # Drop NA for the specific column
-  model <- lmer(formula, data = model_data)
-
+  # model <- lmer(formula, data = model_data)
+  model <- lm(formula, data = model_data)
+  
   # Save summary of the model
   summary_file <- paste0(summary_dir, col, "_summary.txt")
   model_summary <- summary(model)
@@ -153,8 +156,9 @@ for (col in all_columns) {
   # Perform post-hoc pairwise comparisons with adjustments for multiple comparisons and save
   emmeans_file <- paste0(emmeans_txt_dir, col, "_emmeans.txt")
   emmeans_csv <- paste0(emmeans_csv_dir, col, "_emmeans.csv")
-  emmeans_results <- emmeans(model, pairwise ~ trial_and_competitiveness_label)
-  
+  # emmeans_results <- emmeans(model, pairwise ~ trial_and_competitiveness_label)
+  emmeans_results <- emmeans(model, "trial_and_competitiveness_label")
+
   # Extract EMMs and confidence intervals
   emmeans_summary <- summary(emmeans_results, infer = c(TRUE, TRUE))  # infer = c(TRUE, TRUE) gives confidence intervals
   emmeans_summary <- as.data.frame(emmeans_summary)
@@ -165,7 +169,7 @@ for (col in all_columns) {
   write.csv(emmeans_summary, file = emmeans_ci_csv)
   
   # Save pairwise comparisons to text file
-  pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
+  pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
   capture.output(pairwise_comparisons, file = emmeans_file)
   pair_wise_df <- summary(pairwise_comparisons)
   pair_wise_df$spectra_metric <- col  # Add the column name as a new column
@@ -248,7 +252,9 @@ for (col in all_columns) {
   # Perform post-hoc pairwise comparisons with adjustments for multiple comparisons and save
   emmeans_file <- paste0(emmeans_txt_dir, col, "_emmeans.txt")
   emmeans_csv <- paste0(emmeans_csv_dir, col, "_emmeans.csv")
-  emmeans_results <- emmeans(model, pairwise ~ trial_and_competitiveness_label, type = "response")
+  # emmeans_results <- emmeans(model, pairwise ~ trial_and_competitiveness_label, type = "response")
+  emmeans_results <- emmeans(model, "trial_and_competitiveness_label", type = "response")
+
   
   # Extract EMMs and confidence intervals
   emmeans_summary <- summary(emmeans_results, infer = c(TRUE, TRUE))  # infer = c(TRUE, TRUE) gives confidence intervals
@@ -260,7 +266,7 @@ for (col in all_columns) {
   write.csv(emmeans_summary, file = emmeans_ci_csv)
   
   # Save pairwise comparisons to text file
-  pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
+  pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
   capture.output(pairwise_comparisons, file = emmeans_file)
   pair_wise_df <- summary(pairwise_comparisons)
   pair_wise_df$spectra_metric <- col  # Add the column name as a new column
@@ -343,8 +349,9 @@ for (col in all_columns) {
   # Perform post-hoc pairwise comparisons with adjustments for multiple comparisons and save
   emmeans_file <- paste0(emmeans_txt_dir, col, "_emmeans.txt")
   emmeans_csv <- paste0(emmeans_csv_dir, col, "_emmeans.csv")
-  emmeans_results <- emmeans(model, pairwise ~ trial_and_competitiveness_label, type = "response")
-  
+  # emmeans_results <- emmeans(model, pairwise ~ trial_and_competitiveness_label, type = "response")
+  emmeans_results <- emmeans(model, "trial_and_competitiveness_label", type = "response")
+    
   # Extract EMMs and confidence intervals
   emmeans_summary <- summary(emmeans_results, infer = c(TRUE, TRUE))  # infer = c(TRUE, TRUE) gives confidence intervals
   emmeans_summary <- as.data.frame(emmeans_summary)
@@ -355,7 +362,7 @@ for (col in all_columns) {
   write.csv(emmeans_summary, file = emmeans_ci_csv)
   
   # Save pairwise comparisons to text file
-  pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
+  pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
   capture.output(pairwise_comparisons, file = emmeans_file)
   pair_wise_df <- summary(pairwise_comparisons)
   pair_wise_df$spectra_metric <- col  # Add the column name as a new column
