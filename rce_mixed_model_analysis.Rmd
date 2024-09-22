@@ -131,8 +131,8 @@ for (col in all_columns) {
   print(paste("Column:", col))
   
   # Construct the formula for the model
-    formula <- as.formula(paste(col, "~ trial_and_competitiveness_label + cluster_mean_trial_subject_thorax_velocity"))
-    #     formula <- as.formula(paste(col, "~ trial_and_competitiveness_label + cluster_mean_trial_subject_thorax_velocity + (1 | current_subject)"))
+  formula <- as.formula(paste(col, "~ trial_and_competitiveness_label + cluster_mean_trial_subject_thorax_velocity"))
+  # formula <- as.formula(paste(col, "~ trial_and_competitiveness_label + cluster_mean_trial_subject_thorax_velocity + (1 | current_subject)"))
 
   
   # Fit the linear mixed-effects model
