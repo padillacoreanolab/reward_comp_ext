@@ -89,7 +89,7 @@ pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
 print(pairwise_comparisons)
 
 # Plotting the estimated marginal means (least-squares means)
-plot(emmeans_results)
+plot(emmeans_results, comparisons = TRUE)
 ```
 
 
@@ -165,7 +165,7 @@ for (col in all_columns) {
   write.csv(emmeans_summary, file = emmeans_ci_csv)
   
   # Save pairwise comparisons to text file
-  pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+  pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
   capture.output(pairwise_comparisons, file = emmeans_file)
   pair_wise_df <- summary(pairwise_comparisons)
   pair_wise_df$spectra_metric <- col  # Add the column name as a new column
@@ -194,7 +194,7 @@ for (col in all_columns) {
 
   # Plotting the estimated marginal means (least-squares means) and save
   plot_file <- paste0(plots_dir, col, "_emmeans_plot.png")
-  plot(emmeans_results) + ggtitle(paste("Estimated Marginal Means for", col))
+  plot(emmeans_results, comparisons = TRUE) + ggtitle(paste("Estimated Marginal Means for", col))
   ggsave(plot_file)
 }
 ```
@@ -260,7 +260,7 @@ for (col in all_columns) {
   write.csv(emmeans_summary, file = emmeans_ci_csv)
   
   # Save pairwise comparisons to text file
-  pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+  pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
   capture.output(pairwise_comparisons, file = emmeans_file)
   pair_wise_df <- summary(pairwise_comparisons)
   pair_wise_df$spectra_metric <- col  # Add the column name as a new column
@@ -289,7 +289,7 @@ for (col in all_columns) {
 
   # Plotting the estimated marginal means (least-squares means) and save
   plot_file <- paste0(plots_dir, col, "_emmeans_plot.png")
-  plot(emmeans_results) + ggtitle(paste("Estimated Marginal Means for", col))
+  plot(emmeans_results, comparisons = TRUE) + ggtitle(paste("Estimated Marginal Means for", col))
   ggsave(plot_file)
 }
 ```
@@ -355,7 +355,7 @@ for (col in all_columns) {
   write.csv(emmeans_summary, file = emmeans_ci_csv)
   
   # Save pairwise comparisons to text file
-  pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+  pairwise_comparisons <- pairs(emmeans_results, adjust = "tukey")
   capture.output(pairwise_comparisons, file = emmeans_file)
   pair_wise_df <- summary(pairwise_comparisons)
   pair_wise_df$spectra_metric <- col  # Add the column name as a new column
@@ -384,7 +384,7 @@ for (col in all_columns) {
 
   # Plotting the estimated marginal means (least-squares means) and save
   plot_file <- paste0(plots_dir, col, "_emmeans_plot.png")
-  plot(emmeans_results) + ggtitle(paste("Estimated Marginal Means for", col))
+  plot(emmeans_results, comparisons = TRUE) + ggtitle(paste("Estimated Marginal Means for", col))
   ggsave(plot_file)
 }
 ```
