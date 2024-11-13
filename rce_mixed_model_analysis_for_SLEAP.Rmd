@@ -1,0 +1,261 @@
+---
+title: ""
+author: ""
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+# oo <- options(repos = "https://cran.r-project.org/")
+# detach("package:Matrix", unload = TRUE)
+# utils::install.packages("Matrix", type = "source", dependencies=TRUE)
+# detach("package:lme4", unload = TRUE)
+# utils::install.packages("lme4", type = "source", dependencies=TRUE)
+# 
+# options(oo)
+```
+
+```{r}
+oo <- options(repos = "https://cran.r-project.org/")
+install.packages("Matrix", type="binary")
+options(oo)
+```
+```{r}
+oo <- options(repos = "https://cran.r-project.org/")
+install.packages("lme4", type="binary")
+options(oo)
+```
+
+
+```{r}
+```
+
+```{r setup, include=FALSE}
+library("tidyverse")
+# install.packages("tidymodels")
+library(tidymodels)
+# install.packages("knitr")
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+# install.packages("car")
+library(car)
+
+#install.packages("emmeans")
+library(emmeans)
+# install.packages("lme4", type = "source")
+
+library(lme4)
+options(scipen = 3, digits = 5) 
+```
+
+
+
+
+
+```{r}
+mean_distance_df <- read.csv("./results/2024_09_02_behavioral_reward_comp/proc/manual_trials_mean_distance.csv")
+
+mean_velocity_df <- read.csv("./results/2024_09_02_behavioral_reward_comp/proc/manual_trials_mean_velocity.csv")
+```
+
+```{r}
+factored_mean_velocity_df <- mean_velocity_df |>
+  
+  # Demographics
+  mutate(subject_id = as_factor(subject_id)) |>
+  mutate(competition_and_trial_label = as_factor(competition_and_trial_label)) |>
+  mutate(trial_label = as_factor(trial_label)) |>
+  mutate(competition_label = as_factor(competition_label)) 
+  
+  
+
+factored_mean_distance_df <- mean_distance_df |>
+  
+  # Demographics
+  mutate(subject_id = as_factor(subject_id)) |>
+  mutate(competition_and_trial_label = as_factor(competition_and_trial_label)) |>
+  mutate(trial_label = as_factor(trial_label)) |>
+  mutate(competition_label = as_factor(competition_label))  
+
+
+
+
+```
+
+```{r}
+
+unique(select(factored_mean_distance_df, competition_and_trial_label))
+
+unique(select(factored_mean_distance_df, subject_id))
+
+unique(select(factored_mean_velocity_df, competition_and_trial_label))
+
+unique(select(factored_mean_velocity_df, subject_id))
+
+```
+```{r}
+colnames(factored_mean_distance_and_velocity_df)
+```
+
+```{r}
+# Density plots with means
+ggplot(factored_mean_velocity_df, aes(x=mean_velocity, colour=competition_and_trial_label)) +
+  geom_density() + 
+  facet_wrap(. ~ subject_id)
+```
+```{r}
+table(factored_lfp_trial_spectral$subject_id)
+
+summary(factored_lfp_trial_spectral)
+```
+
+
+
+```{r}
+model <- lmer(mean_velocity ~ competition_and_trial_label + (1 | subject_id), data = factored_mean_velocity_df)
+
+# Summary of the model
+model_summary <- summary(model)
+
+# Perform ANOVA to test for significant differences in fixed effects
+anova_results <- anova(model)
+print(anova_results)
+
+# Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
+emmeans_results <- emmeans(model, ~ competition_and_trial_label)
+pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+print(pairwise_comparisons)
+
+# Plotting the estimated marginal means (least-squares means)
+plot(emmeans_results)
+```
+```{r}
+model <- lmer(mean_distance ~ competition_and_trial_label + (1 | subject_id), data = factored_mean_distance_df)
+
+# Summary of the model
+model_summary <- summary(model)
+
+# Perform ANOVA to test for significant differences in fixed effects
+anova_results <- anova(model)
+print(anova_results)
+
+# Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
+emmeans_results <- emmeans(model, ~ competition_and_trial_label)
+pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+print(pairwise_comparisons)
+
+# Plotting the estimated marginal means (least-squares means)
+plot(emmeans_results)
+```
+
+
+
+```{r}
+model
+
+```
+
+
+
+
+
+```{r}
+mean_distance_df <- read.csv("./results/2024_09_02_behavioral_reward_comp/proc/mean_distance_competitiveness.csv")
+
+mean_velocity_df <- read.csv("./results/2024_09_02_behavioral_reward_comp/proc/mean_velocity_competitiveness.csv")
+```
+
+```{r}
+factored_mean_velocity_df <- mean_velocity_df |>
+  
+  # Demographics
+  mutate(subject_id = as_factor(subject_id)) |>
+  mutate(competition_and_trial_label = as_factor(competition_and_trial_label)) |>
+  mutate(trial_label = as_factor(trial_label)) |>
+  mutate(competition_label = as_factor(competition_label)) |>
+  mutate(trial_label_and_competitiveness_grouping = as_factor(trial_label_and_competitiveness_grouping)) 
+
+  
+  
+
+factored_mean_distance_df <- mean_distance_df |>
+  
+  # Demographics
+  mutate(subject_id = as_factor(subject_id)) |>
+  mutate(competition_and_trial_label = as_factor(competition_and_trial_label)) |>
+  mutate(trial_label = as_factor(trial_label)) |>
+  mutate(competition_label = as_factor(competition_label))  |> mutate(trial_label_and_competitiveness_grouping = as_factor(trial_label_and_competitiveness_grouping)) 
+
+
+
+
+
+```
+
+```{r}
+
+unique(select(factored_mean_distance_df, competition_and_trial_label))
+
+unique(select(factored_mean_distance_df, subject_id))
+
+unique(select(factored_mean_velocity_df, competition_and_trial_label))
+
+unique(select(factored_mean_velocity_df, subject_id))
+
+```
+```{r}
+colnames(factored_mean_distance_and_velocity_df)
+```
+
+```{r}
+# Density plots with means
+ggplot(factored_mean_velocity_df, aes(x=mean_velocity, colour=competition_and_trial_label)) +
+  geom_density() + 
+  facet_wrap(. ~ subject_id)
+```
+```{r}
+table(factored_lfp_trial_spectral$subject_id)
+
+summary(factored_lfp_trial_spectral)
+```
+
+
+
+```{r}
+model <- lmer(mean_velocity ~ trial_label_and_competitiveness_grouping + (1 | subject_id), data = factored_mean_velocity_df)
+
+# Summary of the model
+model_summary <- summary(model)
+
+# Perform ANOVA to test for significant differences in fixed effects
+anova_results <- anova(model)
+print(anova_results)
+
+# Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
+emmeans_results <- emmeans(model, ~ trial_label_and_competitiveness_grouping)
+pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+print(pairwise_comparisons)
+
+# Plotting the estimated marginal means (least-squares means)
+plot(emmeans_results)
+```
+```{r}
+model <- lmer(mean_distance ~ trial_label_and_competitiveness_grouping + (1 | subject_id), data = factored_mean_distance_df)
+
+# Summary of the model
+model_summary <- summary(model)
+
+# Perform ANOVA to test for significant differences in fixed effects
+anova_results <- anova(model)
+print(anova_results)
+
+# Perform post-hoc pairwise comparisons with adjustments for multiple comparisons
+emmeans_results <- emmeans(model, ~ trial_label_and_competitiveness_grouping)
+pairwise_comparisons <- pairs(emmeans_results, adjust = "bonferroni")
+print(pairwise_comparisons)
+
+# Plotting the estimated marginal means (least-squares means)
+plot(emmeans_results)
+```
