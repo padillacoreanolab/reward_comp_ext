@@ -108,7 +108,6 @@ def find_nearest_indices(array1, array2):
     indices = np.array([np.abs(array2 - num).argmin() for num in array1_flat])
     return indices.reshape(array1.shape)
 
-
 def filter_by_timestamp_range(start, stop, timestamps, items):
     """
     Filters an array of timestamps and corresponding items based on a timestamp range.
@@ -122,6 +121,14 @@ def filter_by_timestamp_range(start, stop, timestamps, items):
     Returns:
     - tuple: Two numpy.ndarrays, the filtered timestamps and the corresponding items.
     """
+    # Debug inputs
+    # print(f"Start: {start}, Stop: {stop}")
+    # print(f"Timestamps: {timestamps}, Items: {items}")
+    
+    # Ensure items can handle NaN
+    if not np.issubdtype(items.dtype, np.floating):
+        items = items.astype(float)
+    
     # Create a boolean mask for the timestamps within the range
     mask = (timestamps >= start) & (timestamps <= stop)
 
@@ -129,7 +136,10 @@ def filter_by_timestamp_range(start, stop, timestamps, items):
     filtered_timestamps = timestamps[mask]
 
     # Apply the mask to the items, adjusting the length if necessary
-    if len(items) > len(mask):
+    if len(items) == 0:
+        # Handle empty items
+        filtered_items = np.full(len(mask), np.nan)
+    elif len(items) > len(mask):
         # If items is longer than mask, shorten items
         filtered_items = items[:len(mask)][mask]
     elif len(items) < len(mask):
@@ -141,7 +151,6 @@ def filter_by_timestamp_range(start, stop, timestamps, items):
         filtered_items = items[mask]
 
     return filtered_timestamps, filtered_items
-
 
 def main():
     """
